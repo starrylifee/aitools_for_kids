@@ -1,0 +1,7 @@
+streamlit
+google-generativeai
+gspread
+oauth2client
+pillow
+openai
+toml
