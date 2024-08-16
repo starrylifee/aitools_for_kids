@@ -86,43 +86,43 @@ if "prompt" in st.session_state and st.session_state.prompt:
 
     # 색감 관련 형용사
     color_options = [
-        "밝은", "어두운", "선명한", "부드러운", "따뜻한", 
+        "선택하지 않음", "밝은", "어두운", "선명한", "부드러운", "따뜻한", 
         "차가운", "다채로운", "흑백의", "파스텔톤의", "무채색의"
     ]
 
     # 분위기 관련 형용사
     mood_options = [
-        "몽환적인", "현실적인", "우아한", "고요한", "활기찬", 
+        "선택하지 않음", "몽환적인", "현실적인", "우아한", "고요한", "활기찬", 
         "긴장감 있는", "로맨틱한", "공포스러운", "신비로운", "평화로운"
     ]
 
     # 스타일 관련 형용사
     style_options = [
-        "미니멀한", "복잡한", "빈티지한", "모던한", "고전적인", 
+        "선택하지 않음", "미니멀한", "복잡한", "빈티지한", "모던한", "고전적인", 
         "미래적인", "자연주의적인", "기하학적인", "추상적인", "대담한"
     ]
 
     # 텍스처 관련 형용사
     texture_options = [
-        "매끄러운", "거친", "부드러운", "뾰족한", "질감이 느껴지는", 
+        "선택하지 않음", "매끄러운", "거친", "부드러운", "뾰족한", "질감이 느껴지는", 
         "광택 있는", "매트한", "무광의", "광택이 있는", "플러시한"
     ]
 
     # 감정 표현 관련 형용사
     emotion_options = [
-        "즐거운", "슬픈", "분노한", "평온한", "감동적인", 
+        "선택하지 않음", "즐거운", "슬픈", "분노한", "평온한", "감동적인", 
         "따뜻한", "외로운", "흥미로운", "짜릿한", "사려 깊은"
     ]
 
     # 멀티셀렉트로 형용사 선택
-    selected_colors = st.multiselect("🎨 색감 선택", color_options)
-    selected_moods = st.multiselect("🌅 분위기 선택", mood_options)
-    selected_styles = st.multiselect("🖌️ 스타일 선택", style_options)
-    selected_textures = st.multiselect("🧶 텍스처 선택", texture_options)
-    selected_emotions = st.multiselect("😊 감정 표현 선택", emotion_options)
+    selected_colors = st.radio("🎨 색감 선택", color_options)
+    selected_moods = st.radio("🌅 분위기 선택", mood_options)
+    selected_styles = st.radio("🖌️ 스타일 선택", style_options)
+    selected_textures = st.radio("🧶 텍스처 선택", texture_options)
+    selected_emotions = st.radio("😊 감정 표현 선택", emotion_options)
 
-    # 선택된 모든 형용사를 결합
-    combined_concept = " ".join(selected_colors + selected_moods + selected_styles + selected_textures + selected_emotions)
+    # 선택된 "선택하지 않음"을 제외한 형용사 결합
+    combined_concept = " ".join([option for option in [selected_colors, selected_moods, selected_styles, selected_textures, selected_emotions] if option != "선택하지 않음"])
 
     if st.button("🖼️ 이미지 생성", key="generate_image"):
         if combined_concept:
