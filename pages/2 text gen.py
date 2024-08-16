@@ -101,3 +101,5 @@ if "prompt" in st.session_state and st.session_state.prompt:
                 st.write("💡 **AI 생성 대화:** " + st.session_state.ai_answer)
         else:
             st.error("⚠️ 활동을 입력하세요.")
+else:
+    st.info("프롬프트를 업로드하세요.")

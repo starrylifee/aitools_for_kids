@@ -143,3 +143,5 @@ if "prompt" in st.session_state and st.session_state.prompt:
                 st.download_button(label="💾 이미지 다운로드", data=image_url, file_name="generated_image.png")
         else:
             st.error("⚠️ 최소한 하나의 형용사를 선택하세요.")
+else:
+    st.info("프롬프트를 업로드하세요.")
