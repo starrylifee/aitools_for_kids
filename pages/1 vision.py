@@ -8,18 +8,37 @@ import toml
 from PIL import Image, UnidentifiedImageError
 import io
 
+# 페이지 설정 - 아이콘과 제목 설정
+st.set_page_config(
+    page_title="학생용 교육 도구 홈",  # 브라우저 탭에 표시될 제목
+    page_icon="🤖",  # 브라우저 탭에 표시될 아이콘 (이모지 또는 이미지 파일 경로)
+)
+
 # Streamlit의 기본 메뉴와 푸터 숨기기
-hide_github_icon = """
+hide_menu_style = """
     <style>
-    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
-    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
-    .viewerBadge_text__1JaDK{ display: none; }
-    #MainMenu{ visibility: hidden; }
-    footer { visibility: hidden; }
-    header { visibility: hidden; }
+    #MainMenu {visibility: hidden; }
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
     </style>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var mainMenu = document.getElementById('MainMenu');
+        if (mainMenu) {
+            mainMenu.style.display = 'none';
+        }
+        var footer = document.getElementsByTagName('footer')[0];
+        if (footer) {
+            footer.style.display = 'none';
+        }
+        var header = document.getElementsByTagName('header')[0];
+        if (header) {
+            header.style.display = 'none';
+        }
+    });
+    </script>
 """
-st.markdown(hide_github_icon, unsafe_allow_html=True)
+st.markdown(hide_menu_style, unsafe_allow_html=True)
 
 # secrets.toml 파일 경로
 secrets_path = pathlib.Path(__file__).parent.parent / ".streamlit/secrets.toml"

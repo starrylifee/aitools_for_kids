@@ -7,17 +7,30 @@ st.set_page_config(
 )
 
 # Streamlit의 기본 메뉴와 푸터 숨기기
-hide_github_icon = """
+hide_menu_style = """
     <style>
-    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
-    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
-    .viewerBadge_text__1JaDK{ display: none; }
-    #MainMenu{ visibility: hidden; }
-    footer { visibility: hidden; }
-    header { visibility: hidden; }
+    #MainMenu {visibility: hidden; }
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
     </style>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var mainMenu = document.getElementById('MainMenu');
+        if (mainMenu) {
+            mainMenu.style.display = 'none';
+        }
+        var footer = document.getElementsByTagName('footer')[0];
+        if (footer) {
+            footer.style.display = 'none';
+        }
+        var header = document.getElementsByTagName('header')[0];
+        if (header) {
+            header.style.display = 'none';
+        }
+    });
+    </script>
 """
-st.markdown(hide_github_icon, unsafe_allow_html=True)
+st.markdown(hide_menu_style, unsafe_allow_html=True)
 
 # 홈 화면 제목
 st.title("📚 AI 교육 도구 홈")
