@@ -60,7 +60,7 @@ st.markdown("""
     **안내:** 이 도구를 사용하여 교사가 제공한 프롬프트에 따라 이미지를 생성할 수 있습니다.
     1. **코드 입력**: 수업과 관련된 코드를 입력하세요.
     2. **프롬프트 가져오기**: 코드를 입력한 후 '프롬프트 가져오기' 버튼을 클릭하면, 교사가 설정한 프롬프트를 불러옵니다.
-    3. **형용사 선택**: 이미지의 스타일이나 느낌을 나타내는 형용사를 선택하세요.
+    3. **형용사 선택**: 이미지의 스타일이나 느낌을 나타내는 형용사를 순차적으로 선택하세요.
     4. **이미지 생성**: 교사 프롬프트와 선택한 형용사를 바탕으로 이미지를 생성합니다.
     5. **결과 확인**: 생성된 이미지를 확인하고 필요시 다운로드하세요.
 """)
@@ -82,66 +82,71 @@ if "prompt" in st.session_state and st.session_state.prompt:
     st.success("✅ 프롬프트를 성공적으로 불러왔습니다.")
     st.write("**프롬프트:** " + st.session_state.prompt)
 
-    # 사전 정의된 형용사 옵션 제공
+    # 초기화된 변수
+    if "selected_adjectives" not in st.session_state:
+        st.session_state.selected_adjectives = []
 
-    # 색감 관련 형용사
-    color_options = [
-        "선택하지 않음", "밝은", "어두운", "선명한", "부드러운", "따뜻한", 
-        "차가운", "다채로운", "흑백의", "파스텔톤의", "무채색의"
-    ]
+    # 선택된 형용사 표시
+    selected_adjectives = st.session_state.selected_adjectives
+    combined_concept = " ".join(selected_adjectives)
+    st.markdown("**선택한 형용사:** " + combined_concept if combined_concept else "형용사를 선택하세요.")
 
-    # 분위기 관련 형용사
-    mood_options = [
-        "선택하지 않음", "몽환적인", "현실적인", "우아한", "고요한", "활기찬", 
-        "긴장감 있는", "로맨틱한", "공포스러운", "신비로운", "평화로운"
-    ]
+    # 형용사 선택 단계
+    if len(selected_adjectives) == 0:
+        selected_color = st.radio("🎨 색감 선택", ["선택하지 않음", "밝은", "어두운", "선명한", "부드러운", "따뜻한", 
+                                                    "차가운", "다채로운", "흑백의", "파스텔톤의", "무채색의"])
+        if selected_color != "선택하지 않음":
+            st.session_state.selected_adjectives.append(selected_color)
+            st.experimental_rerun()
 
-    # 스타일 관련 형용사
-    style_options = [
-        "선택하지 않음", "미니멀한", "복잡한", "빈티지한", "모던한", "고전적인", 
-        "미래적인", "자연주의적인", "기하학적인", "추상적인", "대담한"
-    ]
+    elif len(selected_adjectives) == 1:
+        selected_mood = st.radio("🌅 분위기 선택", ["선택하지 않음", "몽환적인", "현실적인", "우아한", "고요한", "활기찬", 
+                                                   "긴장감 있는", "로맨틱한", "공포스러운", "신비로운", "평화로운"])
+        if selected_mood != "선택하지 않음":
+            st.session_state.selected_adjectives.append(selected_mood)
+            st.experimental_rerun()
 
-    # 텍스처 관련 형용사
-    texture_options = [
-        "선택하지 않음", "매끄러운", "거친", "부드러운", "뾰족한", "질감이 느껴지는", 
-        "광택 있는", "매트한", "무광의", "광택이 있는", "플러시한"
-    ]
+    elif len(selected_adjectives) == 2:
+        selected_style = st.radio("🖌️ 스타일 선택", ["선택하지 않음", "미니멀한", "복잡한", "빈티지한", "모던한", "고전적인", 
+                                                     "미래적인", "자연주의적인", "기하학적인", "추상적인", "대담한"])
+        if selected_style != "선택하지 않음":
+            st.session_state.selected_adjectives.append(selected_style)
+            st.experimental_rerun()
 
-    # 감정 표현 관련 형용사
-    emotion_options = [
-        "선택하지 않음", "즐거운", "슬픈", "분노한", "평온한", "감동적인", 
-        "따뜻한", "외로운", "흥미로운", "짜릿한", "사려 깊은"
-    ]
+    elif len(selected_adjectives) == 3:
+        selected_texture = st.radio("🧶 텍스처 선택", ["선택하지 않음", "매끄러운", "거친", "부드러운", "뾰족한", "질감이 느껴지는", 
+                                                     "광택 있는", "매트한", "무광의", "광택이 있는", "플러시한"])
+        if selected_texture != "선택하지 않음":
+            st.session_state.selected_adjectives.append(selected_texture)
+            st.experimental_rerun()
 
-    # 멀티셀렉트로 형용사 선택
-    selected_colors = st.radio("🎨 색감 선택", color_options)
-    selected_moods = st.radio("🌅 분위기 선택", mood_options)
-    selected_styles = st.radio("🖌️ 스타일 선택", style_options)
-    selected_textures = st.radio("🧶 텍스처 선택", texture_options)
-    selected_emotions = st.radio("😊 감정 표현 선택", emotion_options)
+    elif len(selected_adjectives) == 4:
+        selected_emotion = st.radio("😊 감정 표현 선택", ["선택하지 않음", "즐거운", "슬픈", "분노한", "평온한", "감동적인", 
+                                                     "따뜻한", "외로운", "흥미로운", "짜릿한", "사려 깊은"])
+        if selected_emotion != "선택하지 않음":
+            st.session_state.selected_adjectives.append(selected_emotion)
+            st.experimental_rerun()
 
-    # 선택된 "선택하지 않음"을 제외한 형용사 결합
-    combined_concept = " ".join([option for option in [selected_colors, selected_moods, selected_styles, selected_textures, selected_emotions] if option != "선택하지 않음"])
+    # 이미지 생성 버튼
+    if len(selected_adjectives) == 5:
+        if st.button("🖼️ 이미지 생성", key="generate_image"):
+            if combined_concept:
+                with st.spinner("🖼️ 이미지를 생성하는 중..."):
+                    combined_prompt = f"{st.session_state.prompt} {combined_concept}"
+                    response = client.images.generate(
+                        model="dall-e-3",
+                        prompt=combined_prompt,
+                        size="1024x1024",
+                        quality="standard",
+                        n=1,
+                    )
 
-    if st.button("🖼️ 이미지 생성", key="generate_image"):
-        if combined_concept:
-            with st.spinner("🖼️ 이미지를 생성하는 중..."):
-                combined_prompt = f"{st.session_state.prompt} {combined_concept}"
-                response = client.images.generate(
-                    model="dall-e-3",
-                    prompt=combined_prompt,
-                    size="1024x1024",
-                    quality="standard",
-                    n=1,
-                )
-
-                image_url = response.data[0].url
-                st.session_state.image_url = image_url
-                st.image(image_url, caption="Generated Image", use_column_width=True)
-                st.success("✅ 이미지가 성공적으로 생성되었습니다!")
-                st.download_button(label="💾 이미지 다운로드", data=image_url, file_name="generated_image.png")
-        else:
-            st.error("⚠️ 최소한 하나의 형용사를 선택하세요.")
+                    image_url = response.data[0].url
+                    st.session_state.image_url = image_url
+                    st.image(image_url, caption="Generated Image", use_column_width=True)
+                    st.success("✅ 이미지가 성공적으로 생성되었습니다!")
+                    st.download_button(label="💾 이미지 다운로드", data=image_url, file_name="generated_image.png")
+            else:
+                st.error("⚠️ 최소한 하나의 형용사를 선택하세요.")
 else:
     st.info("프롬프트를 업로드하세요.")
