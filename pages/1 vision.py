@@ -122,4 +122,4 @@ if "prompt" in st.session_state and st.session_state.prompt:
         except UnidentifiedImageError:
             st.error("❌ 업로드된 파일이 유효한 이미지 파일이 아닙니다. 다른 파일을 업로드해 주세요.")
 else:
-    st.info("이미지를 업로드하세요.")
+    st.info("프롬프트를 업로드하세요.")
