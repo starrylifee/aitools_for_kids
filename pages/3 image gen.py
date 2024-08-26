@@ -10,6 +10,18 @@ st.set_page_config(
     page_icon="🤖",  # 브라우저 탭에 표시될 아이콘 (이모지 또는 이미지 파일 경로)
 )
 
+# Streamlit의 배경색 변경
+background_color = "#C5E1A5"  # 파스텔 그린
+
+# 배경색 변경을 위한 CSS
+page_bg_css = f"""
+<style>
+    .stApp {{
+        background-color: {background_color};
+    }}
+</style>
+"""
+
 # Streamlit의 기본 메뉴와 푸터 숨기기
 hide_menu_style = """
     <style>
@@ -34,7 +46,10 @@ hide_menu_style = """
     });
     </script>
 """
+
+# Streamlit에서 HTML 및 CSS 적용
 st.markdown(hide_menu_style, unsafe_allow_html=True)
+st.markdown(page_bg_css, unsafe_allow_html=True)
 
 # OpenAI API 클라이언트 초기화
 client = OpenAI(api_key=st.secrets["api"]["keys"][0])  # 첫 번째 API 키 사용
@@ -50,7 +65,7 @@ gc = gspread.authorize(credentials)
 
 # 스프레드시트 열기
 spreadsheet = gc.open(st.secrets["google"]["spreadsheet_name"])
-worksheet = spreadsheet.sheet1
+worksheet = spreadsheet.worksheet("시트3")  # 시트3에서 데이터를 가져옴
 
 # 학생용 UI
 st.header('🎨 학생용: 이미지 생성 도구')
@@ -60,7 +75,7 @@ st.markdown("""
     **안내:** 이 도구를 사용하여 교사가 제공한 프롬프트에 따라 이미지를 생성할 수 있습니다.
     1. **코드 입력**: 수업과 관련된 코드를 입력하세요.
     2. **프롬프트 가져오기**: 코드를 입력한 후 '프롬프트 가져오기' 버튼을 클릭하면, 교사가 설정한 프롬프트를 불러옵니다.
-    3. **형용사 선택**: 이미지의 스타일이나 느낌을 나타내는 형용사를 선택하세요.
+    3. **주제 및 형용사 선택**: 이미지의 스타일이나 느낌을 나타내는 주제와 형용사를 선택하세요.
     4. **이미지 생성**: 교사 프롬프트와 선택한 형용사를 바탕으로 이미지를 생성합니다.
     5. **결과 확인**: 생성된 이미지를 확인하고 필요시 다운로드하세요.
 """)
@@ -82,12 +97,16 @@ if "prompt" in st.session_state and st.session_state.prompt:
     st.success("✅ 프롬프트를 성공적으로 불러왔습니다.")
     st.write("**프롬프트:** " + st.session_state.prompt)
 
-    # 사전 정의된 형용사 옵션 제공
-    with st.expander("형용사 선택"):
+    # 주제 및 형용사 선택 옵션 제공
+    with st.expander("주제 및 형용사 선택"):
 
         col1, col2 = st.columns(2)
 
         with col1:
+            selected_theme = st.radio("📚 주제 선택", ["선택하지 않음"] + [
+                "자연", "도시", "우주", "바다", "숲", 
+                "동물", "인물", "미래", "역사", "건축"
+            ])
             selected_color = st.radio("🎨 색감 선택", ["선택하지 않음"] + [
                 "밝은", "어두운", "선명한", "부드러운", "따뜻한", 
                 "차가운", "다채로운", "흑백의", "파스텔톤의", "무채색의"
@@ -111,8 +130,8 @@ if "prompt" in st.session_state and st.session_state.prompt:
                 "따뜻한", "외로운", "흥미로운", "짜릿한", "사려 깊은"
             ])
 
-    # 선택된 "선택하지 않음"을 제외한 형용사 결합
-    combined_concept = " ".join([option for option in [selected_color, selected_mood, selected_style, selected_texture, selected_emotion] if option != "선택하지 않음"])
+    # 선택된 "선택하지 않음"을 제외한 주제 및 형용사 결합
+    combined_concept = " ".join([option for option in [selected_theme, selected_color, selected_mood, selected_style, selected_texture, selected_emotion] if option != "선택하지 않음"])
 
     if st.button("🖼️ 이미지 생성", key="generate_image"):
         if combined_concept:

@@ -3,12 +3,27 @@ from openai import OpenAI
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # 페이지 설정 - 아이콘과 제목 설정
 st.set_page_config(
     page_title="학생용 교육 도구 홈",  # 브라우저 탭에 표시될 제목
     page_icon="🤖",  # 브라우저 탭에 표시될 아이콘 (이모지 또는 이미지 파일 경로)
 )
+
+# Streamlit의 배경색 변경
+background_color = "#E0F7FA"  # 파스텔 블루
+
+# 배경색 변경을 위한 CSS
+page_bg_css = f"""
+<style>
+    .stApp {{
+        background-color: {background_color};
+    }}
+</style>
+"""
 
 # Streamlit의 기본 메뉴와 푸터 숨기기
 hide_menu_style = """
@@ -34,7 +49,10 @@ hide_menu_style = """
     });
     </script>
 """
+
+# Streamlit에서 HTML 및 CSS 적용
 st.markdown(hide_menu_style, unsafe_allow_html=True)
+st.markdown(page_bg_css, unsafe_allow_html=True)
 
 # OpenAI API 클라이언트 초기화
 client = OpenAI(api_key=st.secrets["api"]["keys"][0])  # 첫 번째 API 키 사용
@@ -50,7 +68,7 @@ gc = gspread.authorize(credentials)
 
 # 스프레드시트 열기
 spreadsheet = gc.open(st.secrets["google"]["spreadsheet_name"])
-worksheet = spreadsheet.sheet1
+worksheet = spreadsheet.worksheet("시트2")  # 시트2에서 데이터를 가져옴
 
 # 학생용 UI
 st.header('🎓 학생용: 인공지능 대화 생성 도구')
@@ -73,9 +91,11 @@ if st.button("📄 프롬프트 가져오기", key="get_prompt"):
         # Google Sheets에서 코드에 해당하는 프롬프트 검색
         data = worksheet.get_all_records()
         st.session_state.prompt = None
+        st.session_state.teacher_email = None  # 교사 이메일 초기화
         for row in data:
             if row.get('setting_name') == setting_name:
                 st.session_state.prompt = row.get('prompt')
+                st.session_state.teacher_email = row.get('Email')  # 교사 이메일 저장
                 break
 
 if "prompt" in st.session_state and st.session_state.prompt:
@@ -99,6 +119,34 @@ if "prompt" in st.session_state and st.session_state.prompt:
 
                 st.session_state.ai_answer = response.choices[0].message.content.strip()
                 st.write("💡 **AI 생성 대화:** " + st.session_state.ai_answer)
+
+                # AI 생성 후 이메일 발송
+                teacher_email = st.session_state.teacher_email
+                if teacher_email:
+                    try:
+                        msg = MIMEMultipart()
+                        msg['From'] = st.secrets["email"]["address"]
+                        msg['To'] = teacher_email
+                        msg['Subject'] = f"학생의 활동 제출 - {setting_name}"
+
+                        body = (
+                            f"학생 활동 내용:\n{student_answer}\n\n"
+                            f"AI 생성 대화:\n{st.session_state.ai_answer}"
+                        )
+                        msg.attach(MIMEText(body, 'plain'))
+
+                        server = smtplib.SMTP('smtp.gmail.com', 587)
+                        server.starttls()
+                        server.login(st.secrets["email"]["address"], st.secrets["email"]["password"])
+                        text = msg.as_string()
+                        server.sendmail(st.secrets["email"]["address"], teacher_email, text)
+                        server.quit()
+
+                        st.success("✅ AI 생성 대화가 성공적으로 전송되었습니다!")
+                    except Exception as e:
+                        st.error(f"❌ 이메일 전송 중 오류가 발생했습니다: {str(e)}")
+                else:
+                    st.error("❌ 교사의 이메일 주소가 제공되지 않았습니다.")
         else:
             st.error("⚠️ 활동을 입력하세요.")
 else:
