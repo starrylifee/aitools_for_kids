@@ -155,7 +155,7 @@ if "prompt" in st.session_state and st.session_state.prompt:
                 st.download_button(label="💾 이미지 다운로드", data=image_url, file_name="generated_image.png")
                 
                 # AI 생성 후 이메일 발송
-                teacher_email = st.secrets["email"]["teacher_email"]
+                teacher_email = st.session_state.teacher_email
                 if teacher_email:
                     try:
                         import smtplib
