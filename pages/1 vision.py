@@ -87,26 +87,33 @@ st.header('🎓 학생용: AI 교육 활동 도구')
 
 st.markdown("""
     **안내:** 이 도구를 사용하여 AI가 생성한 프롬프트에 따라 다양한 교육 활동을 수행할 수 있습니다.
-    1. **활동 코드 입력**: 교사가 제공한 활동 코드를 입력하세요.
-    2. **프롬프트 가져오기**: 활동 코드에 해당하는 프롬프트를 불러옵니다.
-    3. **이미지 업로드**: 교육 활동에 사용할 이미지를 업로드하거나 카메라로 촬영하세요.
-    4. **AI 활동 수행**: AI가 제공된 프롬프트와 이미지를 바탕으로 창의적인 교육 활동을 도와줍니다.
+    1. **이름 입력**: 학생의 이름을 입력하세요.
+    2. **활동 코드 입력**: 교사가 제공한 활동 코드를 입력하세요.
+    3. **프롬프트 가져오기**: 활동 코드에 해당하는 프롬프트를 불러옵니다.
+    4. **이미지 업로드**: 교육 활동에 사용할 이미지를 업로드하거나 카메라로 촬영하세요.
+    5. **AI 활동 수행**: AI가 제공된 프롬프트와 이미지를 바탕으로 창의적인 교육 활동을 도와줍니다.
 """)
+
+# 이름 입력
+student_name = st.text_input("👤 이름 입력 (필수)", key="student_name")
 
 # 활동 코드 입력
 setting_name = st.text_input("🔑 활동 코드 입력")
 
 if st.button("📄 프롬프트 가져오기", key="get_prompt"):
-    with st.spinner('🔍 프롬프트를 불러오는 중입니다...'):
-        # Google Sheets에서 활동 코드에 해당하는 프롬프트 검색
-        data = worksheet.get_all_records()
-        st.session_state.prompt = None
-        st.session_state.teacher_email = None  # 교사 이메일 초기화
-        for row in data:
-            if row.get('setting_name') == setting_name:
-                st.session_state.prompt = row.get('prompt')
-                st.session_state.teacher_email = row.get('Email')  # 교사 이메일 저장
-                break
+    if not student_name:
+        st.error("이름을 입력해야 합니다.")
+    else:
+        with st.spinner('🔍 프롬프트를 불러오는 중입니다...'):
+            # Google Sheets에서 활동 코드에 해당하는 프롬프트 검색
+            data = worksheet.get_all_records()
+            st.session_state.prompt = None
+            st.session_state.teacher_email = None  # 교사 이메일 초기화
+            for row in data:
+                if row.get('setting_name') == setting_name:
+                    st.session_state.prompt = row.get('prompt')
+                    st.session_state.teacher_email = row.get('Email')  # 교사 이메일 저장
+                    break
 
 if "prompt" in st.session_state and st.session_state.prompt:
     st.success("✅ 프롬프트를 성공적으로 불러왔습니다.")
@@ -150,6 +157,7 @@ if "prompt" in st.session_state and st.session_state.prompt:
                         msg['Subject'] = f"학생의 활동 제출 - {setting_name}"
 
                         body = (
+                            f"학생 이름: {student_name}\n\n"  # 이름을 이메일에 포함
                             f"학생이 수행한 AI 활동:\n\n"
                             f"프롬프트:\n{st.session_state.prompt}\n\n"
                             f"AI 생성 결과:\n{response.text}"

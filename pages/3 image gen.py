@@ -73,25 +73,32 @@ st.header('🎨 학생용: 이미지 생성 도구')
 # 사용 설명 추가
 st.markdown("""
     **안내:** 이 도구를 사용하여 교사가 제공한 프롬프트에 따라 이미지를 생성할 수 있습니다.
-    1. **코드 입력**: 수업과 관련된 코드를 입력하세요.
-    2. **프롬프트 가져오기**: 코드를 입력한 후 '프롬프트 가져오기' 버튼을 클릭하면, 교사가 설정한 프롬프트를 불러옵니다.
-    3. **주제 및 형용사 선택**: 이미지의 스타일이나 느낌을 나타내는 주제와 형용사를 선택하세요.
-    4. **이미지 생성**: 교사 프롬프트와 선택한 형용사를 바탕으로 이미지를 생성합니다.
-    5. **결과 확인**: 생성된 이미지를 확인하고 필요시 다운로드하세요.
+    1. **이름 입력**: 학생의 이름을 입력하세요.
+    2. **코드 입력**: 수업과 관련된 코드를 입력하세요.
+    3. **프롬프트 가져오기**: 코드를 입력한 후 '프롬프트 가져오기' 버튼을 클릭하면, 교사가 설정한 프롬프트를 불러옵니다.
+    4. **주제 및 형용사 선택**: 이미지의 스타일이나 느낌을 나타내는 주제와 형용사를 선택하세요.
+    5. **이미지 생성**: 교사 프롬프트와 선택한 형용사를 바탕으로 이미지를 생성합니다.
+    6. **결과 확인**: 생성된 이미지를 확인하고 필요시 다운로드하세요.
 """)
+
+# 이름 입력
+student_name = st.text_input("👤 이름 입력 (필수)", key="student_name")
 
 # 코드 입력
 setting_name = st.text_input("🔑 코드 입력")
 
 if st.button("📄 프롬프트 가져오기", key="get_prompt"):
-    with st.spinner("🔍 프롬프트를 불러오는 중..."):
-        # Google Sheets에서 코드에 해당하는 프롬프트 검색
-        data = worksheet.get_all_records()
-        st.session_state.prompt = None
-        for row in data:
-            if row.get('setting_name') == setting_name:
-                st.session_state.prompt = row.get('prompt')
-                break
+    if not student_name:
+        st.error("이름을 입력해야 합니다.")
+    else:
+        with st.spinner("🔍 프롬프트를 불러오는 중..."):
+            # Google Sheets에서 코드에 해당하는 프롬프트 검색
+            data = worksheet.get_all_records()
+            st.session_state.prompt = None
+            for row in data:
+                if row.get('setting_name') == setting_name:
+                    st.session_state.prompt = row.get('prompt')
+                    break
 
 if "prompt" in st.session_state and st.session_state.prompt:
     st.success("✅ 프롬프트를 성공적으로 불러왔습니다.")
@@ -103,10 +110,6 @@ if "prompt" in st.session_state and st.session_state.prompt:
         col1, col2 = st.columns(2)
 
         with col1:
-            selected_theme = st.radio("📚 주제 선택", ["선택하지 않음"] + [
-                "자연", "도시", "우주", "바다", "숲", 
-                "동물", "인물", "미래", "역사", "건축"
-            ])
             selected_color = st.radio("🎨 색감 선택", ["선택하지 않음"] + [
                 "밝은", "어두운", "선명한", "부드러운", "따뜻한", 
                 "차가운", "다채로운", "흑백의", "파스텔톤의", "무채색의"
@@ -150,6 +153,40 @@ if "prompt" in st.session_state and st.session_state.prompt:
                 st.image(image_url, caption="Generated Image", use_column_width=True)
                 st.success("✅ 이미지가 성공적으로 생성되었습니다!")
                 st.download_button(label="💾 이미지 다운로드", data=image_url, file_name="generated_image.png")
+                
+                # AI 생성 후 이메일 발송
+                teacher_email = st.secrets["email"]["teacher_email"]
+                if teacher_email:
+                    try:
+                        import smtplib
+                        from email.mime.multipart import MIMEMultipart
+                        from email.mime.text import MIMEText
+
+                        msg = MIMEMultipart()
+                        msg['From'] = st.secrets["email"]["address"]
+                        msg['To'] = teacher_email
+                        msg['Subject'] = f"학생의 이미지 생성 결과 제출 - {setting_name}"
+
+                        body = (
+                            f"학생 이름: {student_name}\n\n"  # 이름을 이메일에 포함
+                            f"프롬프트:\n{st.session_state.prompt}\n\n"
+                            f"선택된 형용사:\n{combined_concept}\n\n"
+                            f"이미지 URL:\n{image_url}\n"
+                        )
+                        msg.attach(MIMEText(body, 'plain'))
+
+                        server = smtplib.SMTP('smtp.gmail.com', 587)
+                        server.starttls()
+                        server.login(st.secrets["email"]["address"], st.secrets["email"]["password"])
+                        text = msg.as_string()
+                        server.sendmail(st.secrets["email"]["address"], teacher_email, text)
+                        server.quit()
+
+                        st.success("✅ 생성된 이미지 결과가 성공적으로 전송되었습니다!")
+                    except Exception as e:
+                        st.error(f"❌ 이메일 전송 중 오류가 발생했습니다: {str(e)}")
+                else:
+                    st.error("❌ 교사의 이메일 주소가 제공되지 않았습니다.")
         else:
             st.error("⚠️ 최소한 하나의 형용사를 선택하세요.")
 else:
