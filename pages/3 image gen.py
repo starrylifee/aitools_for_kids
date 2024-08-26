@@ -134,7 +134,7 @@ if "prompt" in st.session_state and st.session_state.prompt:
             ])
 
     # 선택된 "선택하지 않음"을 제외한 주제 및 형용사 결합
-    combined_concept = " ".join([option for option in [selected_theme, selected_color, selected_mood, selected_style, selected_texture, selected_emotion] if option != "선택하지 않음"])
+    combined_concept = " ".join([option for option in [selected_color, selected_mood, selected_style, selected_texture, selected_emotion] if option != "선택하지 않음"])
 
     if st.button("🖼️ 이미지 생성", key="generate_image"):
         if combined_concept:
