@@ -154,7 +154,7 @@ if "prompt" in st.session_state and st.session_state.prompt:
                     except Exception as e:
                         st.error(f"❌ 이메일 전송 중 오류가 발생했습니다: {str(e)}")
                 else:
-                    st.error("❌ 교사의 이메일 주소가 제공되지 않았습니다.")
+                    st.info("프롬프트에 E-mail을 입력하면 학생의 작품을 확인할 수 있습니다.")
         else:
             st.error("⚠️ 활동을 입력하세요.")
 else:
